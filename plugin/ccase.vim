@@ -16,6 +16,7 @@
 "   double quotes clashed with <f-args>; commands work without exec, anyway. 
 " - Added EscapeComments() function, which adds escaping of % and # characters
 "   to the already filtered | and !
+" - BF: changed s:comments to l:comments in CtCheckin()
 "
 " Revision 1.36  2003/12/09 16:14:26  dp
 " My changes:
@@ -826,7 +827,7 @@ function! s:CtCheckin(file, ...)
   endif
 
   " Allow to use the default or no comment
-  if s:comment =~ "-nc" || s:comment == "" || s:comment == "."
+  if l:comment =~ "-nc" || l:comment == "" || l:comment == "."
     let l:ccase_command = "!cleartool ci -nc \"" . l:file . '"'
   else
     let l:ccase_command = "!cleartool ci -c \"" . l:comment .
