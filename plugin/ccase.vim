@@ -567,6 +567,9 @@ function! s:GetComment(text)
     " to surround the comment text.
     let s:comment = substitute(l:comment, '"\|!', '\\\0', "g")
 
+    " Escape special Ex characters # and % (cp. :help cmdline-special)
+    let s:comment = substitute(s:comment, '\(^\|[^\\]\)\&\([%#]\)', '\\\2', "g" )
+
     " Save the unescaped text
     let g:ccaseSaveComment = l:comment
   endif
@@ -630,6 +633,8 @@ function! s:CtMkelem(filename, ...)
   if a:0 == 1
       let l:comment = a:1
       let l:comment = substitute(l:comment, '"\|!', '\\\0', "g")
+      " Escape special Ex characters # and % (cp. :help cmdline-special)
+      let l:comment = substitute(l:comment, '\(^\|[^\\]\)\&\([%#]\)', '\\\2', "g" )
   elseif a:0 > 1
       echohl Error
       echomsg "This command requires either none or one argument!"
@@ -739,6 +744,8 @@ function! s:CtCheckout(file, reserved, ...)
   if a:0 == 1
       let l:comment = a:1
       let l:comment = substitute(l:comment, '"\|!', '\\\0', "g")
+      " Escape special Ex characters # and % (cp. :help cmdline-special)
+      let l:comment = substitute(l:comment, '\(^\|[^\\]\)\&\([%#]\)', '\\\2', "g" )
   elseif a:0 > 1
       echohl Error
       echomsg "This command requires either none or one argument!"
@@ -817,6 +824,8 @@ function! s:CtCheckin(file, ...)
   if a:0 == 1
       let l:comment = a:1
       let l:comment = substitute(l:comment, '"\|!', '\\\0', "g")
+      " Escape special Ex characters # and % (cp. :help cmdline-special)
+      let l:comment = substitute(l:comment, '\(^\|[^\\]\)\&\([%#]\)', '\\\2', "g" )
   elseif a:0 > 1
       echohl Error
       echomsg "This command requires either none or one argument!"
@@ -1096,6 +1105,22 @@ fu! s:CtChangeActiv()
   call s:SetActiv(l:activity)
   bd
 endfun " s:CtChangeActiv
+
+" ===========================================================================
+fu! s:EscapeComments(comment)
+" Escape harmful characters in the entered comments, so that they can be
+" passed to the shell cleartool command. 
+" ===========================================================================
+  " Double quotes in comment must be escaped, because of the cleartool
+  " invocation via: 
+  " cleartool checkout -c "<comment_text>"
+  " Single quotes are OK, since the checkout shell command uses double quotes
+  " to surround the comment text.
+  let l:comment = substitute(a:comment, '"\|!', '\\\0', "g")
+  " Escape special Ex characters # and % (cp. :help cmdline-special)
+  let l:comment = substitute(l:comment, '\(^\|[^\\]\)\&\([%#]\)', '\\\2', "g" )
+  return l:comment
+endfun " s:EscapeComments
 
 " ===========================================================================
 function! s:OpenInNewWin(filename)
