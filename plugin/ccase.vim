@@ -12,7 +12,8 @@
 " - All :cab do not replicate the :com command, but reference the command, so
 "   there's only one single definition. 
 " - Fixed quotes on various defective commands (e.g. :Cthist)
-" - removed (undocumented) cab ctbdif
+" - BF: Ctcoc also captures list of files in result buffer. 
+" - Removed (undocumented) cab ctbdif
 " - BF: ListActiv(): double quotes needed for '-fmt' command-line arguments
 "   (on Windows). 
 " - BF: error message formatting in CtMkelem()
@@ -1308,7 +1309,7 @@ com! -nargs=0 -complete=command Ctver exec "!cleartool describe -aattr version \
 cab ctver Ctver
 
 "     List my checkouts in the current view and directory
-com! -nargs=0 -complete=command Ctcoc exec "!cleartool lsco -cview -short ".<SID>CtMeStr()
+com! -nargs=0 -complete=command Ctcoc call <SID>CtCmd("!cleartool lsco -short -cview ".<SID>CtMeStr(), "checkouts_cwd")
 cab ctcoc Ctcoc
 
 "     List my checkouts in the current view and directory, and it's sub-dir's
