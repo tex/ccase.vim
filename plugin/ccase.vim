@@ -595,7 +595,9 @@ function! s:CtMkelem(filename, ...)
     " No, don't checkout the directory
     if l:checkoutdir =~ '[Nn]'
       echohl Error
-      echomsg "\nERROR:  Unable to make file an element!\n"
+      echo "\n"
+      echomsg "ERROR:  Unable to make file an element!"
+      echo "\n"
       echohl None
       return 1
     else " Else, Yes, checkout the directory
@@ -955,8 +957,8 @@ fun! s:ListActiv(current_act)
   endif
 endfun " s:ListActiv
 com! -nargs=0 -complete=command Ctlsa call <SID>ListActiv("")
-com! -nargs=0 -complete=command Ctlsc call <SID>ListActiv("current")
 cab ctlsa  Ctlsa
+com! -nargs=0 -complete=command Ctlsc call <SID>ListActiv("current")
 cab ctlsc  Ctlsc
 
 " ===========================================================================
@@ -1281,33 +1283,25 @@ cab  ctqdif call <SID>CtConsoleDiff('', 0)<cr>
 com! -nargs=0 -complete=command Ctqdif call <SID>CtConsoleDiff('', 0)
 "     describe buffer
 cab  ctdesc !cleartool describe "%"
-com! -nargs=0 -complete=command Ctdesc exec "!cleartool describe ".expand("%")
+com! -nargs=0 -complete=command Ctdesc exec "!cleartool describe \"".expand("%")."\""
 "     give version of buffer
 cab  ctver  !cleartool describe -aattr version "%"
-com! -nargs=0 -complete=command Ctver exec 
-      \ "!cleartool describe -aattr version ".expand("%")
+com! -nargs=0 -complete=command Ctver exec "!cleartool describe -aattr version \"".expand("%")."\""
 
 "     List my checkouts in the current view and directory
 cab  ctcoc  !cleartool lsco -cview -short <c-r>=<SID>CtMeStr()<cr>
-com! -nargs=0 -complete=command Ctcoc exec
-      \ "!cleartool lsco -cview -short ".<SID>CtMeStr()
+com! -nargs=0 -complete=command Ctcoc exec "!cleartool lsco -cview -short ".<SID>CtMeStr()
 "     List my checkouts in the current view and directory, and it's sub-dir's
-cab  ctcor  call <SID>CtCmd("!cleartool lsco -short -cview ".
-      \ <SID>CtMeStr()." -recurse", "checkouts_recurse")<CR>
-com! -nargs=0 -complete=command Ctcor exec 
-      \ "call <SID>CtCmd(\"!cleartool lsco -short -cview \".
-      \ <SID>CtMeStr().\" -recurse\", \"checkouts_recurse\")"
+cab  ctcor  call <SID>CtCmd("!cleartool lsco -short -cview "<SID>CtMeStr()." -recurse", "checkouts_recurse")
+com! -nargs=0 -complete=command Ctcor call <SID>CtCmd("!cleartool lsco -short -cview ".<SID>CtMeStr()." -recurse", "checkouts_recurse")<cr>
 "     List all my checkouts in the current view (ALL VOBS)
-cab  ctcov  call <SID>CtCmd("!cleartool lsco -short -cview ".
-      \ <SID>CtMeStr()." -avob", "checkouts_allvobs")<CR>
-com! -nargs=0 -complete=command Ctcov exec 
-      \ "call <SID>CtCmd(\"!cleartool lsco -short -cview \".
-      \ <SID>CtMeStr().\" -avob\", \"checkouts_allvobs\")"
+cab  ctcov  call <SID>CtCmd("!cleartool lsco -short -cview ".<SID>CtMeStr()." -avob", "checkouts_allvobs")
+com! -nargs=0 -complete=command Ctcov call <SID>CtCmd("!cleartool lsco -short -cview ".<SID>CtMeStr()." -avob", "checkouts_allvobs")<cr>
 cab  ctcmt  !cleartool describe -fmt "Comment:\n'\%c'" "%"
-com! -nargs=0 -complete=command Ctcmt exec
-      \ "!cleartool describe -fmt \"Comment:\n'\%c'\" ".expand("%")
-cab  ctann  call <SID>CtAnnotate('')
+com! -nargs=0 -complete=command Ctcmt exec "!cleartool describe -fmt \"Comment:\\n\'\\%c\'\" \"".expand("%")."\""
+
 com! -nargs=0 -complete=command Ctann call <SID>CtAnnotate('')
+cab  ctann  Ctann
 
 "     buffer text version tree
 com! -nargs=0 -complete=command Cttree call <SID>CtCmd("!cleartool lsvtree -all -merge \"".expand("%")."\"")
@@ -1319,22 +1313,24 @@ cab  cthist Cthist
 
 "       These commands don't work the same on UNIX vs. WinDoze
 if has("unix")
+  "     Diff buffer with the latest version on the main branch:
   com! -nargs=0 -complete=command Ctldif call <SID>CtConsoleDiff('', '/main/LATEST')
+  "     xlsvtree on buffer
   com! -nargs=0 -complete=command Ctxlsv exec "!xlsvtree ".expand("%")." &"
+  "     xdiff with predecessor
   com! -nargs=0 -complete=command Ctdiff exec "!cleartool diff -graphical -pred \"".expand("%")."\" &"
 
 else
+  "     Diff buffer with the latest version on the main branch:
   com! -nargs=0 -complete=command Ctldif call <SID>CtConsoleDiff('', '\main\LATEST')
+  "     xlsvtree on buffer
   com! -nargs=0 -complete=command Ctxlsv exec "!start clearvtree.exe \"".expand("%")."\""
+  "     xdiff with predecessor
   com! -nargs=0 -complete=command Ctdiff exec "!start cleartool diff -graphical -pred \"".expand("%")."\""
 endif
 
-
-"     Diff buffer with the latest version on the main branch:
 cab  ctldif Ctldif
-"     xlsvtree on buffer
 cab  ctxlsv Ctxlsv
-"     xdiff with predecessor
 cab  ctdiff Ctdiff
 
 "     Give the current viewname
