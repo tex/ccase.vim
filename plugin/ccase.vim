@@ -8,12 +8,14 @@
 " Modifications: {{{
 " $Log: ccase.vim,v $
 " Revision 1.40ingo 13-Aug-2004 Ingo Karkat
+" - Added :ctlsco command and menu entry
+" - Renamed :ctdiff to :ctpdiff and clarified menu entry
 " - Removed all superfluous ':exec's from command definitions
 " - All :cab do not replicate the :com command, but reference the command, so
 "   there's only one single definition. 
 " - Fixed quotes on various defective commands (e.g. :Cthist)
-" - BF: Ctcoc also captures list of files in result buffer. 
-" - Removed (undocumented) cab ctbdif
+" - BF: Ctcoc also captures list of files in result buffer, which will be
+"   automatically updated. " - Removed (undocumented) cab ctbdif
 " - BF: ListActiv(): double quotes needed for '-fmt' command-line arguments
 "   (on Windows). 
 " - BF: error message formatting in CtMkelem()
@@ -218,6 +220,15 @@ augroup ccase
   "        be lost.
   "
   " Checkout List window, update listing of checkouts when window is re-entered
+  au BufEnter *checkouts_cwd* silent exe
+        \ "if exists('b:ccaseUsed') == 1|
+        \ bd\|
+        \ let s:listStr = '!cleartool lsco -short -cview' |
+        \ if g:ccaseJustMe == 1 |
+        \   let s:listStr = s:listStr.' -me' |
+        \ endif |
+        \ call s:CtCmd(s:listStr, 'checkouts_cwd') |
+        \ endif"
   au BufEnter *checkouts_recurse* silent exe
         \ "if exists('b:ccaseUsed') == 1|
         \ bd\|
@@ -1341,7 +1352,9 @@ if has("unix")
   "     xlsvtree on buffer
   com! -nargs=0 -complete=command Ctxlsv exec "!xlsvtree ".expand("%")." &"
   "     xdiff with predecessor
-  com! -nargs=0 -complete=command Ctdiff exec "!cleartool diff -graphical -pred \"".expand("%")."\" &"
+  com! -nargs=0 -complete=command Ctpdiff exec "!cleartool diff -graphical -pred \"".expand("%")."\" &"
+  "     graphical list checkouts
+  com! -nargs=0 -complete=command Ctlsco silent exec "! cleartool lscheckout -graphical ".expand("%:p:h")
 
 else
   "     Diff buffer with the latest version on the main branch:
@@ -1349,12 +1362,15 @@ else
   "     xlsvtree on buffer
   com! -nargs=0 -complete=command Ctxlsv exec "!start clearvtree.exe \"".expand("%")."\""
   "     xdiff with predecessor
-  com! -nargs=0 -complete=command Ctdiff exec "!start cleartool diff -graphical -pred \"".expand("%")."\""
+  com! -nargs=0 -complete=command Ctpdiff exec "!start cleartool diff -graphical -pred \"".expand("%")."\""
+  "     graphical list checkouts
+  com! -nargs=0 -complete=command Ctlsco silent exec "! start cleartool lscheckout -graphical ".expand("%:p:h")
 endif
 
 cab  ctldif Ctldif
 cab  ctxlsv Ctxlsv
-cab  ctdiff Ctdiff
+cab  ctpdiff Ctpdiff
+cab  ctlsco Ctlsco
 
 "     Give the current viewname
 com! -nargs=0 -complete=command Ctpwv call <SID>CtShowViewName()
@@ -1556,8 +1572,8 @@ if (has("gui_running") && &guioptions !~# "M") ||
 
   amenu 60.500 &Clearcase.-SEP3-        :
 
-  amenu 60.510 &Clearcase.Di&ff<Tab>:ctdiff
-        \ :ctdiff<cr>
+  amenu 60.510 &Clearcase.External\ diff\ with\ Pred<Tab>:ctpdiff
+        \ :ctpdiff<cr>
   amenu 60.511 &Clearcase.Diff\ this\ with\ &Pred<Tab>:ctpdif
         \ :ctpdif<cr>
   amenu 60.512 &Clearcase.Diff\ this\ with\ ver&0\ on\ branch<Tab>:ct0dif
@@ -1577,6 +1593,8 @@ if (has("gui_running") && &guioptions !~# "M") ||
         \ :ctcor<cr>
   amenu 60.560 &Clearcase.List\ Checkouts\ in\ VOB<Tab>:ctcov
         \ :ctcov<cr>
+  amenu 60.570 &Clearcase.External\ List\ Checkouts<Tab>:ctlsco
+	\ :ctlsco<cr>
 
   amenu 60.600 &Clearcase.-SEP5-        :
 
@@ -1612,7 +1630,7 @@ finish
 
 === START_DOC
 *ccase.txt*	For Vim version 6.0 and up                           #version#
-             LAST MODIFICATION: "Tue, 09 Dec 2003 11:05:13 (dp)"
+             LAST MODIFICATION: "Fri, 13 Aug 2004 16:00:00 (ik)"
 
 
 		  VIM REFERENCE MANUAL    by Douglas Potts
@@ -1681,7 +1699,13 @@ the view private version to a .keep file.
 
                                                                      *:ctcoc*
 List the checkouts for the current user, for this view, in the current working
-directory.
+directory. This redirects the output from the "cleartool lsco" command to a
+results file, and splits the window, and opens the results file in that new
+window.  The results will be in a special, non-modifiable buffer named
+'[checkouts_cwd]'.  While this buffer is open, the |BufEnter| |autocmd| will
+cause the window to update for any check in/out activity that has occurred
+(within its scope), since it was opened. This autocmd update mechanism will be
+a part of the ccase |augroup|.
 
                                                                       *:ctcor*
 List the checkouts for the current user, for this view, in the current working
@@ -1702,6 +1726,9 @@ this buffer is open, the |BufEnter| |autocmd| will cause the window to update
 for any check in/out activity that has occurred (within its scope), since it
 was opened.
 This autocmd update mechanism will be a part of the ccase |augroup|.
+
+                                                                    *:ctlsco*
+Spawn off the clearcase graphical list checkouts tool.
 
 
 
@@ -1731,14 +1758,14 @@ added. A summary of each version of the file will also be included.
 Spawn off the ClearCase(R) xlsvtree (graphical version tree viewer) for the
 current file.
 
-                                                                     *:ctdiff*
-Spawn off the clearcase graphical diff tool to display differences between the
-current file and its immediate predecessor.
-
                                                                      *:ctpdif*
 Compare the current file to its predecessor version using |:diffsplit|.
 Depending on the value of |g:ccaseDiffVertSplit|, the split will be vertical
 or horizontal.
+
+                                                                    *:ctpdiff*
+Spawn off the clearcase graphical diff tool to display differences between the
+current file and its immediate predecessor.
 
                                                                      *:ct0dif*
 Compare the current file to its first version on the same branch using
