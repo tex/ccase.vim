@@ -14,6 +14,8 @@
 "   additional argument. 
 " - Had to remove :exec "..." at command definitions, because the surrounding
 "   double quotes clashed with <f-args>; commands work without exec, anyway. 
+" - Added EscapeComments() function, which adds escaping of % and # characters
+"   to the already filtered | and !
 "
 " Revision 1.36  2003/12/09 16:14:26  dp
 " My changes:
@@ -557,18 +559,7 @@ function! s:GetComment(text)
   if l:comment == ""
     return 1
   else
-    " Save this comment
-    " If comment entered, had double quotes in the text,
-    " escape them, so the when the:
-    " cleartool checkout -c "<comment_text>"
-    "
-    " is executed by the shell, it doesn't get confused by the extra quotes.
-    " Single quotes are OK, since the checkout shell command uses double quotes
-    " to surround the comment text.
-    let s:comment = substitute(l:comment, '"\|!', '\\\0', "g")
-
-    " Escape special Ex characters # and % (cp. :help cmdline-special)
-    let s:comment = substitute(s:comment, '\(^\|[^\\]\)\&\([%#]\)', '\\\2', "g" )
+    let s:comment = s:EscapeComments(l:comment)
 
     " Save the unescaped text
     let g:ccaseSaveComment = l:comment
@@ -631,10 +622,7 @@ function! s:CtMkelem(filename, ...)
 
   let l:comment = ""
   if a:0 == 1
-      let l:comment = a:1
-      let l:comment = substitute(l:comment, '"\|!', '\\\0', "g")
-      " Escape special Ex characters # and % (cp. :help cmdline-special)
-      let l:comment = substitute(l:comment, '\(^\|[^\\]\)\&\([%#]\)', '\\\2', "g" )
+      let l:comment = s:EscapeComments(a:1)
   elseif a:0 > 1
       echohl Error
       echomsg "This command requires either none or one argument!"
@@ -742,10 +730,7 @@ function! s:CtCheckout(file, reserved, ...)
 
   let l:comment = ""
   if a:0 == 1
-      let l:comment = a:1
-      let l:comment = substitute(l:comment, '"\|!', '\\\0', "g")
-      " Escape special Ex characters # and % (cp. :help cmdline-special)
-      let l:comment = substitute(l:comment, '\(^\|[^\\]\)\&\([%#]\)', '\\\2', "g" )
+      let l:comment = s:EscapeComments(a:1)
   elseif a:0 > 1
       echohl Error
       echomsg "This command requires either none or one argument!"
@@ -822,10 +807,7 @@ function! s:CtCheckin(file, ...)
 
   let l:comment = ""
   if a:0 == 1
-      let l:comment = a:1
-      let l:comment = substitute(l:comment, '"\|!', '\\\0', "g")
-      " Escape special Ex characters # and % (cp. :help cmdline-special)
-      let l:comment = substitute(l:comment, '\(^\|[^\\]\)\&\([%#]\)', '\\\2', "g" )
+      let l:comment = s:EscapeComments(a:1)
   elseif a:0 > 1
       echohl Error
       echomsg "This command requires either none or one argument!"
