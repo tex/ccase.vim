@@ -7,6 +7,13 @@
 "
 " Modifications: {{{
 " $Log: ccase.vim,v $
+" Revision 1.40ingo 13-Aug-2004 Ingo Karkat
+" - Removed all superfluous ':exec's from command definitions
+" - All :cab do not replicate the :com command, but reference the command, so
+"   there's only one single definition. 
+" - Fixed quotes on various defective commands (e.g. :Cthist)
+" - BF: error message formatting in CtMkelem()
+"
 " Revision 1.36ingo 12-Dec-2003 Ingo Karkat
 " - Fixed missing enclosing double quotes at :ctcmt command
 " - Modified :Ctci :Ctco :Ctcou :Ctmk commands which take an optional argument
@@ -1250,55 +1257,68 @@ endfun " s:InstallDocumentation
 "                   Beginning of Command line Abbreviations
 " ===========================================================================
 " {{{
-"     Make current file an element in the vob
-cab  ctmk   call <SID>CtMkelem(expand("%"))
-com! -nargs=? -complete=command Ctmk call <SID>CtMkelem(expand("%"), <f-args>)
-
 "     Abbreviate cleartool
 cab  ct     !cleartool
+
+"     Make current file an element in the vob
+com! -nargs=? -complete=command Ctmk call <SID>CtMkelem(expand("%"), <f-args>)
+cab ctmk Ctmk
+
 "     check-out buffer (w/ edit afterwards to get rid of RO property)
-cab  ctco   call <SID>CtCheckout('', "r")
 com! -nargs=? -complete=command Ctco call <SID>CtCheckout('', "r", <f-args>)
+cab ctco Ctco
+
 "     check-out buffer (...) unreserved
-cab  ctcou  call <SID>CtCheckout('', "u")
 com! -nargs=? -complete=command Ctcou call <SID>CtCheckout('', "u", <f-args>)
+cab ctcou Ctcou
+
 "     check-in buffer (w/ edit afterwards to get RO property)
-cab  ctci   call <SID>CtCheckin('')
 com! -nargs=? -complete=command Ctci call <SID>CtCheckin('', <f-args>)
+cab ctci Ctci
+
 "     uncheckout buffer (w/ edit afterwards to get RO property)
-cab  ctunco call <SID>CtUncheckout('')
 com! -nargs=0 -complete=command Ctunco call <SID>CtUncheckout('')
+cab ctunco Ctunco
+
 "     Diff buffer with predecessor version
-cab  ctpdif call <SID>CtConsoleDiff('', 1)<cr>
 com! -nargs=0 -complete=command Ctpdif call <SID>CtConsoleDiff('', 1)
+cab ctpdif Ctpdif
+
 "     Diff buffer with the first version on the current branch:
 com! -nargs=0 -complete=command Ct0dif call <SID>CtConsoleDiff('', 2)
 cab  ct0dif Ct0dif
 cab  ctbdif Ct0dif
+
 "     Diff buffer with the closest common ancestor version with main branch:
-cab  ctmdif call <SID>CtConsoleDiff('', 3)<cr>
 com! -nargs=0 -complete=command Ctmdif call <SID>CtConsoleDiff('', 3)
+cab ctmdif Ctmdif
+
 "     Diff buffer with queried version
-cab  ctqdif call <SID>CtConsoleDiff('', 0)<cr>
 com! -nargs=0 -complete=command Ctqdif call <SID>CtConsoleDiff('', 0)
+cab ctqdif Ctqdif
+
 "     describe buffer
-cab  ctdesc !cleartool describe "%"
 com! -nargs=0 -complete=command Ctdesc exec "!cleartool describe \"".expand("%")."\""
+cab ctdesc Ctdesc
+
 "     give version of buffer
-cab  ctver  !cleartool describe -aattr version "%"
 com! -nargs=0 -complete=command Ctver exec "!cleartool describe -aattr version \"".expand("%")."\""
+cab ctver Ctver
 
 "     List my checkouts in the current view and directory
-cab  ctcoc  !cleartool lsco -cview -short <c-r>=<SID>CtMeStr()<cr>
 com! -nargs=0 -complete=command Ctcoc exec "!cleartool lsco -cview -short ".<SID>CtMeStr()
+cab ctcoc Ctcoc
+
 "     List my checkouts in the current view and directory, and it's sub-dir's
-cab  ctcor  call <SID>CtCmd("!cleartool lsco -short -cview "<SID>CtMeStr()." -recurse", "checkouts_recurse")
 com! -nargs=0 -complete=command Ctcor call <SID>CtCmd("!cleartool lsco -short -cview ".<SID>CtMeStr()." -recurse", "checkouts_recurse")<cr>
+cab ctcor Ctcor
+
 "     List all my checkouts in the current view (ALL VOBS)
-cab  ctcov  call <SID>CtCmd("!cleartool lsco -short -cview ".<SID>CtMeStr()." -avob", "checkouts_allvobs")
 com! -nargs=0 -complete=command Ctcov call <SID>CtCmd("!cleartool lsco -short -cview ".<SID>CtMeStr()." -avob", "checkouts_allvobs")<cr>
-cab  ctcmt  !cleartool describe -fmt "Comment:\n'\%c'" "%"
+cab ctcov Ctcov
+
 com! -nargs=0 -complete=command Ctcmt exec "!cleartool describe -fmt \"Comment:\\n\'\\%c\'\" \"".expand("%")."\""
+cab ctcmt Ctcmt
 
 com! -nargs=0 -complete=command Ctann call <SID>CtAnnotate('')
 cab  ctann  Ctann
