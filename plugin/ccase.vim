@@ -12,6 +12,9 @@
 " - All :cab do not replicate the :com command, but reference the command, so
 "   there's only one single definition. 
 " - Fixed quotes on various defective commands (e.g. :Cthist)
+" - removed (undocumented) cab ctbdif
+" - BF: ListActiv(): double quotes needed for '-fmt' command-line arguments
+"   (on Windows). 
 " - BF: error message formatting in CtMkelem()
 "
 " Revision 1.36ingo 12-Dec-2003 Ingo Karkat
@@ -954,13 +957,13 @@ fun! s:ListActiv(current_act)
 "     List current clearcase activity
 " ===========================================================================
   if a:current_act == "current"
-    silent let @"=system("cleartool lsactiv -cact -fmt \'\%n\t\%c\'")
+    silent let @"=system("cleartool lsactiv -cact -fmt \"\%n\t\%c\"")
     let l:tmp = substitute(@", "\n", "", "g")
     echohl Question
     echo l:tmp
     echohl None
   else " List all actvities
-    call s:CtCmd("!cleartool lsactiv -fmt \'\\%n\t\\%c\'", "activity_list")
+    call s:CtCmd("!cleartool lsactiv -fmt \"\\%n\t\\%c\"", "activity_list")
   endif
 endfun " s:ListActiv
 com! -nargs=0 -complete=command Ctlsa call <SID>ListActiv("")
@@ -1287,7 +1290,6 @@ cab ctpdif Ctpdif
 "     Diff buffer with the first version on the current branch:
 com! -nargs=0 -complete=command Ct0dif call <SID>CtConsoleDiff('', 2)
 cab  ct0dif Ct0dif
-cab  ctbdif Ct0dif
 
 "     Diff buffer with the closest common ancestor version with main branch:
 com! -nargs=0 -complete=command Ctmdif call <SID>CtConsoleDiff('', 3)
@@ -1592,8 +1594,8 @@ let s:revision =
 " Install the document:
 " NOTE: We must detect script name here. In a function, <sfile> will be
 "       expanded to the function name instead!
-silent! let s:install_status = 1
-    "\ s:InstallDocumentation(expand('<sfile>:p'), s:revision)
+silent! let s:install_status = 
+    \ s:InstallDocumentation(expand('<sfile>:p'), s:revision)
 
 if (s:install_status == 0)
     echomsg expand("<sfile>:t:r") . ' v' . s:revision .
