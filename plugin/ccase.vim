@@ -8,11 +8,13 @@
 " Modifications: {{{
 " $Log: ccase.vim,v $
 " Revision 1.36ingo 09-Dec-2003 ingo
-" - incorporated changes into version 1.36
 " - Fixed missing enclosing double quotes at :ctcmt command
-" - Added :Ctci :Ctco :Ctmk commands which take an optional argument
+" - Modified :Ctci :Ctco :Ctcou :Ctmk commands which take an optional argument
 "   representing the comment. Corresponding s:Ct...() functions got an
 "   additional argument. 
+" - Had to remove :exec "..." at command definitions, because the surrounding
+"   double quotes clashed with <f-args>; commands work without exec, anyway. 
+"
 " Revision 1.36  2003/12/09 16:14:26  dp
 " My changes:
 " Add User commands for all the regular cabbrevs used, so that diff
@@ -942,7 +944,7 @@ fun! s:MakeActiv()
     echohl None
   endif
 endfun " s:MakeActiv
-com! -nargs=0 -complete=command Ctmka exec "call <SID>MakeActiv()"
+com! -nargs=0 -complete=command Ctmka call <SID>MakeActiv()
 cab  ctmka  Ctmka
 
 " ===========================================================================
@@ -959,8 +961,8 @@ fun! s:ListActiv(current_act)
     call s:CtCmd("!cleartool lsactiv -fmt \'\\%n\t\\%c\'", "activity_list")
   endif
 endfun " s:ListActiv
-com! -nargs=0 -complete=command Ctlsa exec "call <SID>ListActiv(\"\")"
-com! -nargs=0 -complete=command Ctlsc exec "call <SID>ListActiv(\"current\")"
+com! -nargs=0 -complete=command Ctlsa call <SID>ListActiv("")
+com! -nargs=0 -complete=command Ctlsc call <SID>ListActiv("current")
 cab ctlsa  Ctlsa
 cab ctlsc  Ctlsc
 
@@ -984,7 +986,7 @@ fun! s:SetActiv(activity)
     echohl None
   endif
 endfun " s:SetActiv
-com! -nargs=0 -complete=command Ctsta exec "call <SID>SetActiv(\"\")"
+com! -nargs=0 -complete=command Ctsta call <SID>SetActiv("")
 cab  ctsta Ctsta
 
 " ===========================================================================
@@ -1012,7 +1014,7 @@ fun! s:CtOpenProjExp()
     echohl None
   endif
 endfun " s:CtOpenProjExp
-com! -nargs=0 -complete=command Ctexp exec "call <SID>CtOpenProjExp()"
+com! -nargs=0 -complete=command Ctexp call <SID>CtOpenProjExp()
 cab ctexp Ctexp
 
 " ===========================================================================
@@ -1238,35 +1240,35 @@ endfun " s:InstallDocumentation
 " {{{
 "     Make current file an element in the vob
 cab  ctmk   call <SID>CtMkelem(expand("%"))
-com! -nargs=? -complete=command Ctmk exec "call <SID>CtMkelem(expand(\"%\"), <f-args>)"
+com! -nargs=? -complete=command Ctmk call <SID>CtMkelem(expand("%"), <f-args>)
 
 "     Abbreviate cleartool
 cab  ct     !cleartool
 "     check-out buffer (w/ edit afterwards to get rid of RO property)
 cab  ctco   call <SID>CtCheckout('', "r")
-com! -nargs=? -complete=command Ctco exec "call <SID>CtCheckout('', \"r\", <f-args>)"
+com! -nargs=? -complete=command Ctco call <SID>CtCheckout('', "r", <f-args>)
 "     check-out buffer (...) unreserved
 cab  ctcou  call <SID>CtCheckout('', "u")
-com! -nargs=? -complete=command Ctcou exec "call <SID>CtCheckout('', \"u\", <f-args>)"
+com! -nargs=? -complete=command Ctcou call <SID>CtCheckout('', "u", <f-args>)
 "     check-in buffer (w/ edit afterwards to get RO property)
 cab  ctci   call <SID>CtCheckin('')
-com! -nargs=? -complete=command Ctci exec "call <SID>CtCheckin('', <f-args>)"
+com! -nargs=? -complete=command Ctci call <SID>CtCheckin('', <f-args>)
 "     uncheckout buffer (w/ edit afterwards to get RO property)
 cab  ctunco call <SID>CtUncheckout('')
-com! -nargs=0 -complete=command Ctunco exec "call <SID>CtUncheckout('')"
+com! -nargs=0 -complete=command Ctunco call <SID>CtUncheckout('')
 "     Diff buffer with predecessor version
 cab  ctpdif call <SID>CtConsoleDiff('', 1)<cr>
-com! -nargs=0 -complete=command Ctpdif exec "call <SID>CtConsoleDiff('', 1)"
+com! -nargs=0 -complete=command Ctpdif call <SID>CtConsoleDiff('', 1)
 "     Diff buffer with the first version on the current branch:
-com! -nargs=0 -complete=command Ct0dif exec "call <SID>CtConsoleDiff('', 2)"
+com! -nargs=0 -complete=command Ct0dif call <SID>CtConsoleDiff('', 2)
 cab  ct0dif Ct0dif
 cab  ctbdif Ct0dif
 "     Diff buffer with the closest common ancestor version with main branch:
 cab  ctmdif call <SID>CtConsoleDiff('', 3)<cr>
-com! -nargs=0 -complete=command Ctmdif exec "call <SID>CtConsoleDiff('', 3)"
+com! -nargs=0 -complete=command Ctmdif call <SID>CtConsoleDiff('', 3)
 "     Diff buffer with queried version
 cab  ctqdif call <SID>CtConsoleDiff('', 0)<cr>
-com! -nargs=0 -complete=command Ctqdif exec "call <SID>CtConsoleDiff('', 0)"
+com! -nargs=0 -complete=command Ctqdif call <SID>CtConsoleDiff('', 0)
 "     describe buffer
 cab  ctdesc !cleartool describe "%"
 com! -nargs=0 -complete=command Ctdesc exec "!cleartool describe ".expand("%")
@@ -1291,11 +1293,11 @@ cab  ctcov  call <SID>CtCmd("!cleartool lsco -short -cview ".
 com! -nargs=0 -complete=command Ctcov exec 
       \ "call <SID>CtCmd(\"!cleartool lsco -short -cview \".
       \ <SID>CtMeStr().\" -avob\", \"checkouts_allvobs\")"
-cab  ctcmt  !cleartool describe -fmt "Comment:\n'\%c'" %
+cab  ctcmt  !cleartool describe -fmt "Comment:\n'\%c'" "%"
 com! -nargs=0 -complete=command Ctcmt exec
       \ "!cleartool describe -fmt \"Comment:\n'\%c'\" ".expand("%")
 cab  ctann  call <SID>CtAnnotate('')
-com! -nargs=0 -complete=command Ctann exec "call <SID>CtAnnotate('')"
+com! -nargs=0 -complete=command Ctann call <SID>CtAnnotate('')
 
 "       These commands don't work the same on UNIX vs. WinDoze
 if has("unix")
@@ -1350,7 +1352,7 @@ cab  ctxlsv Ctxlsv
 cab  ctdiff Ctdiff
 "     Give the current viewname
 "cab  ctpwv call <SID>CtShowViewName()<CR>
-com! -nargs=0 -complete=command Ctpwv exec "call <SID>CtShowViewName()"
+com! -nargs=0 -complete=command Ctpwv call <SID>CtShowViewName()
 cab  ctpwv Ctpwv
 
 " }}}
