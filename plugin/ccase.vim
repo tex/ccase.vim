@@ -7,6 +7,12 @@
 "
 " Modifications: {{{
 " $Log: ccase.vim,v $
+" Revision 1.36ingo 09-Dec-2003 ingo
+" - incorporated changes into version 1.36
+" - Fixed missing enclosing double quotes at :ctcmt command
+" - Added :Ctci :Ctco :Ctmk commands which take an optional argument
+"   representing the comment. Corresponding s:Ct...() functions got an
+"   additional argument. 
 " Revision 1.36  2003/12/09 16:14:26  dp
 " My changes:
 " Add User commands for all the regular cabbrevs used, so that diff
@@ -567,7 +573,7 @@ function! s:GetComment(text)
 endfunction " s:GetComment
 
 " ===========================================================================
-function! s:CtMkelem(filename)
+function! s:CtMkelem(filename, ...)
 " Make the current file an element of the current directory.
 " ===========================================================================
   let l:retVal = 0
@@ -619,7 +625,16 @@ function! s:CtMkelem(filename)
   endif
 
   let l:comment = ""
-  if g:ccaseNoComment == 0
+  if a:0 == 1
+      let l:comment = a:1
+      let l:comment = substitute(l:comment, '"\|!', '\\\0', "g")
+  elseif a:0 > 1
+      echohl Error
+      echomsg "This command requires either none or one argument!"
+      echohl None
+      return 1
+  endif
+  if (g:ccaseNoComment == 0) && (l:comment == "")
     " Make the file an element, ClearCase will prompt for comment
     if s:GetComment('Enter element creation comment: ') == 0
       let l:comment = s:comment
@@ -701,7 +716,7 @@ function! s:CtMkelem(filename)
 endfunction " s:CtMkelem
 
 " ===========================================================================
-function! s:CtCheckout(file, reserved)
+function! s:CtCheckout(file, reserved, ...)
 " Function to perform a clearcase checkout for the current file
 " Return 0 if OK, 1 if failed.
 "
@@ -719,7 +734,16 @@ function! s:CtCheckout(file, reserved)
   endif
 
   let l:comment = ""
-  if g:ccaseNoComment == 0
+  if a:0 == 1
+      let l:comment = a:1
+      let l:comment = substitute(l:comment, '"\|!', '\\\0', "g")
+  elseif a:0 > 1
+      echohl Error
+      echomsg "This command requires either none or one argument!"
+      echohl None
+      return 1
+  endif
+  if (g:ccaseNoComment == 0) && (l:comment == "")
     if s:GetComment("Enter checkout comment: ") == 0
       let l:comment = s:comment
     else
@@ -777,7 +801,7 @@ function! s:CtCheckout(file, reserved)
 endfunction " s:CtCheckout()
 
 " ===========================================================================
-function! s:CtCheckin(file)
+function! s:CtCheckin(file, ...)
 " Function to perform a clearcase checkin for the current file
 " Return 0 if OK, return 1 if failed.
 " ===========================================================================
@@ -788,7 +812,16 @@ function! s:CtCheckin(file)
   endif
 
   let l:comment = ""
-  if g:ccaseNoComment == 0
+  if a:0 == 1
+      let l:comment = a:1
+      let l:comment = substitute(l:comment, '"\|!', '\\\0', "g")
+  elseif a:0 > 1
+      echohl Error
+      echomsg "This command requires either none or one argument!"
+      echohl None
+      return 1
+  endif
+  if (g:ccaseNoComment == 0) && (l:comment == "")
     if s:GetComment("Enter checkin comment: ") == 0
       let l:comment = s:comment
     else
@@ -1205,19 +1238,19 @@ endfun " s:InstallDocumentation
 " {{{
 "     Make current file an element in the vob
 cab  ctmk   call <SID>CtMkelem(expand("%"))
-com! -nargs=0 -complete=command Ctmk exec "call <SID>CtMkelem(expand(\"%\"))"
+com! -nargs=? -complete=command Ctmk exec "call <SID>CtMkelem(expand(\"%\"), <f-args>)"
 
 "     Abbreviate cleartool
 cab  ct     !cleartool
 "     check-out buffer (w/ edit afterwards to get rid of RO property)
 cab  ctco   call <SID>CtCheckout('', "r")
-com! -nargs=0 -complete=command Ctco exec "call <SID>CtCheckout('', \"r\")"
+com! -nargs=? -complete=command Ctco exec "call <SID>CtCheckout('', \"r\", <f-args>)"
 "     check-out buffer (...) unreserved
 cab  ctcou  call <SID>CtCheckout('', "u")
-com! -nargs=0 -complete=command Ctcou exec "call <SID>CtCheckout('', \"u\")"
+com! -nargs=? -complete=command Ctcou exec "call <SID>CtCheckout('', \"u\", <f-args>)"
 "     check-in buffer (w/ edit afterwards to get RO property)
 cab  ctci   call <SID>CtCheckin('')
-com! -nargs=0 -complete=command Ctci exec "call <SID>CtCheckin('')"
+com! -nargs=? -complete=command Ctci exec "call <SID>CtCheckin('', <f-args>)"
 "     uncheckout buffer (w/ edit afterwards to get RO property)
 cab  ctunco call <SID>CtUncheckout('')
 com! -nargs=0 -complete=command Ctunco exec "call <SID>CtUncheckout('')"
