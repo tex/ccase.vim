@@ -7,13 +7,14 @@
 "
 " Modifications: {{{
 " $Log: ccase.vim,v $
-" Revision 1.36ingo 09-Dec-2003 ingo
+" Revision 1.36ingo 12-Dec-2003 Ingo Karkat
 " - Fixed missing enclosing double quotes at :ctcmt command
 " - Modified :Ctci :Ctco :Ctcou :Ctmk commands which take an optional argument
 "   representing the comment. Corresponding s:Ct...() functions got an
 "   additional argument. 
-" - Had to remove :exec "..." at command definitions, because the surrounding
-"   double quotes clashed with <f-args>; commands work without exec, anyway. 
+" - Had to remove some ':exec' at ':exec call "..."' command definitions,
+"   because the surrounding double quotes clashed with <f-args>; commands work
+"   without exec, anyway. Proably, ':exec' can be removed before all ':call'? 
 " - Added EscapeComments() function, which adds escaping of % and # characters
 "   to the already filtered | and !
 " - BF: changed s:comments to l:comments in CtCheckin()
