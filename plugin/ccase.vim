@@ -1309,59 +1309,35 @@ com! -nargs=0 -complete=command Ctcmt exec
 cab  ctann  call <SID>CtAnnotate('')
 com! -nargs=0 -complete=command Ctann call <SID>CtAnnotate('')
 
+"     buffer text version tree
+com! -nargs=0 -complete=command Cttree call <SID>CtCmd("!cleartool lsvtree -all -merge \"".expand("%")."\"")
+cab  cttree Cttree
+
+"     buffer history
+com! -nargs=0 -complete=command Cthist call <SID>CtCmd("!cleartool lshistory \"".expand("%")."\"")
+cab  cthist Cthist
+
 "       These commands don't work the same on UNIX vs. WinDoze
 if has("unix")
-  com! -nargs=0 -complete=command Ctldif exec
-        \ "call <SID>CtConsoleDiff('', '/main/LATEST')"
-  com! -nargs=0 -complete=command Cttree exec
-        \ "call <SID>CtCmd(\"!cleartool lsvtree -all -merge ".expand("%")."\")"
-  com! -nargs=0 -complete=command Cthist exec
-        \ "call <SID>CtCmd(\"!cleartool lshistory ".expand("%")."\")"
+  com! -nargs=0 -complete=command Ctldif call <SID>CtConsoleDiff('', '/main/LATEST')
   com! -nargs=0 -complete=command Ctxlsv exec "!xlsvtree ".expand("%")." &"
-  com! -nargs=0 -complete=command Ctdiff exec
-        \ "!cleartool diff -graphical -pred ".expand("%")." &"
+  com! -nargs=0 -complete=command Ctdiff exec "!cleartool diff -graphical -pred \"".expand("%")."\" &"
 
 else
-  "     Diff buffer with the latest version on the main branch:
-  "cab  ctldif call <SID>CtConsoleDiff('', '\main\LATEST')<cr>
-  com! -nargs=0 -complete=command Ctldif exec
-        \ "call <SID>CtConsoleDiff('', '\main\LATEST')"
-  "     buffer text version tree
-  "cab  cttree call <SID>CtCmd("!cleartool lsvtree -all -merge \"".expand("%").'"')<CR>
-  com! -nargs=0 -complete=command Cttree exec
-        \ "call <SID>CtCmd(\"!cleartool lsvtree -all -merge \"".expand("%")."\"\")"
-  "     buffer history
-  "cab  cthist call <SID>CtCmd("!cleartool lshistory \"".expand("%").'"')<CR>
-  com! -nargs=0 -complete=command Cthist exec
-        \ "call <SID>CtCmd(\"!cleartool lshistory \"".expand("%")."\"\")"
-  "     xlsvtree on buffer
-  "cab  ctxlsv !start clearvtree.exe "%"<cr>
-  com! -nargs=0 -complete=command Ctxlsv exec 
-        \ "!start clearvtree.exe ".expand("%")
-  "     xdiff with predecessor
-  "cab  ctdiff !start cleartool diff -graphical -pred "%"<CR>
-  com! -nargs=0 -complete=command Ctdiff exec
-        \ "!start cleartool diff -graphical -pred \"".expand("%")."\""
+  com! -nargs=0 -complete=command Ctldif call <SID>CtConsoleDiff('', '\main\LATEST')
+  com! -nargs=0 -complete=command Ctxlsv exec "!start clearvtree.exe \"".expand("%")."\""
+  com! -nargs=0 -complete=command Ctdiff exec "!start cleartool diff -graphical -pred \"".expand("%")."\""
 endif
 
 
 "     Diff buffer with the latest version on the main branch:
-"cab  ctldif call <SID>CtConsoleDiff('', '/main/LATEST')<cr>
 cab  ctldif Ctldif
-"     buffer text version tree
-"cab  cttree call <SID>CtCmd("!cleartool lsvtree -all -merge \"".expand("%").'"')<CR>
-cab  cttree Cttree
-"     buffer history
-"cab  cthist call <SID>CtCmd("!cleartool lshistory \"".expand("%").'"')<CR>
-cab  cthist Cthist
 "     xlsvtree on buffer
-"cab  ctxlsv !xlsvtree "%" &<CR>
 cab  ctxlsv Ctxlsv
 "     xdiff with predecessor
-"cab  ctdiff !cleartool diff -graphical -pred "%" &<CR>
 cab  ctdiff Ctdiff
+
 "     Give the current viewname
-"cab  ctpwv call <SID>CtShowViewName()<CR>
 com! -nargs=0 -complete=command Ctpwv call <SID>CtShowViewName()
 cab  ctpwv Ctpwv
 
@@ -1600,8 +1576,8 @@ let s:revision =
 " Install the document:
 " NOTE: We must detect script name here. In a function, <sfile> will be
 "       expanded to the function name instead!
-silent! let s:install_status =
-    \ s:InstallDocumentation(expand('<sfile>:p'), s:revision)
+silent! let s:install_status = 1
+    "\ s:InstallDocumentation(expand('<sfile>:p'), s:revision)
 
 if (s:install_status == 0)
     echomsg expand("<sfile>:t:r") . ' v' . s:revision .
