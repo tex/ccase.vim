@@ -1100,7 +1100,8 @@ fu! s:EscapeComments(comment)
   " to surround the comment text.
   let l:comment = substitute(a:comment, '"\|!', '\\\0', "g")
   " Escape special Ex characters # and % (cp. :help cmdline-special)
-  let l:comment = substitute(l:comment, '\(^\|[^\\]\)\&\([%#]\)', '\\\2', "g" )
+  " let l:comment = substitute(l:comment, '\(^\|[^\\]\)\&\([%#]\)', '\\\2', "g" )
+  let l:comment = escape(l:comment, '%#')
   return l:comment
 endfun " s:EscapeComments
 
