@@ -1312,11 +1312,11 @@ com! -nargs=0 -complete=command Ctcoc exec "!cleartool lsco -cview -short ".<SID
 cab ctcoc Ctcoc
 
 "     List my checkouts in the current view and directory, and it's sub-dir's
-com! -nargs=0 -complete=command Ctcor call <SID>CtCmd("!cleartool lsco -short -cview ".<SID>CtMeStr()." -recurse", "checkouts_recurse")<cr>
+com! -nargs=0 -complete=command Ctcor call <SID>CtCmd("!cleartool lsco -short -cview ".<SID>CtMeStr()." -recurse", "checkouts_recurse")
 cab ctcor Ctcor
 
 "     List all my checkouts in the current view (ALL VOBS)
-com! -nargs=0 -complete=command Ctcov call <SID>CtCmd("!cleartool lsco -short -cview ".<SID>CtMeStr()." -avob", "checkouts_allvobs")<cr>
+com! -nargs=0 -complete=command Ctcov call <SID>CtCmd("!cleartool lsco -short -cview ".<SID>CtMeStr()." -avob", "checkouts_allvobs")
 cab ctcov Ctcov
 
 com! -nargs=0 -complete=command Ctcmt exec "!cleartool describe -fmt \"Comment:\\n\'\\%c\'\" \"".expand("%")."\""
