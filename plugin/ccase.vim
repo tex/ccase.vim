@@ -13,7 +13,10 @@
 " - Removed all superfluous ':exec's from command definitions
 " - All :cab do not replicate the :com command, but reference the command, so
 "   there's only one single definition. 
+" - Added 'silent' to all 'exe' commands to avoid key presses during command
+"   execution. 
 " - Fixed quotes on various defective commands (e.g. :Cthist)
+" - BF: No :ctlsco on Unix available. 
 " - BF: Ctcoc also captures list of files in result buffer, which will be
 "   automatically updated. " - Removed (undocumented) cab ctbdif
 " - BF: ListActiv(): double quotes needed for '-fmt' command-line arguments
@@ -1312,11 +1315,11 @@ com! -nargs=0 -complete=command Ctqdif call <SID>CtConsoleDiff('', 0)
 cab ctqdif Ctqdif
 
 "     describe buffer
-com! -nargs=0 -complete=command Ctdesc exec "!cleartool describe \"".expand("%")."\""
+com! -nargs=0 -complete=command Ctdesc silent exec "!cleartool describe \"".expand("%")."\""
 cab ctdesc Ctdesc
 
 "     give version of buffer
-com! -nargs=0 -complete=command Ctver exec "!cleartool describe -aattr version \"".expand("%")."\""
+com! -nargs=0 -complete=command Ctver silent exec "!cleartool describe -aattr version \"".expand("%")."\""
 cab ctver Ctver
 
 "     List my checkouts in the current view and directory
@@ -1331,7 +1334,7 @@ cab ctcor Ctcor
 com! -nargs=0 -complete=command Ctcov call <SID>CtCmd("!cleartool lsco -short -cview ".<SID>CtMeStr()." -avob", "checkouts_allvobs")
 cab ctcov Ctcov
 
-com! -nargs=0 -complete=command Ctcmt exec "!cleartool describe -fmt \"Comment:\\n\'\\%c\'\" \"".expand("%")."\""
+com! -nargs=0 -complete=command Ctcmt silent exec "!cleartool describe -fmt \"Comment:\\n\'\\%c\'\" \"".expand("%")."\""
 cab ctcmt Ctcmt
 
 com! -nargs=0 -complete=command Ctann call <SID>CtAnnotate('')
@@ -1350,19 +1353,19 @@ if has("unix")
   "     Diff buffer with the latest version on the main branch:
   com! -nargs=0 -complete=command Ctldif call <SID>CtConsoleDiff('', '/main/LATEST')
   "     xlsvtree on buffer
-  com! -nargs=0 -complete=command Ctxlsv exec "!xlsvtree ".expand("%")." &"
+  com! -nargs=0 -complete=command Ctxlsv silent exec "!xlsvtree ".expand("%")." &"
   "     xdiff with predecessor
-  com! -nargs=0 -complete=command Ctpdiff exec "!cleartool diff -graphical -pred \"".expand("%")."\" &"
+  com! -nargs=0 -complete=command Ctpdiff silent exec "!cleartool diff -graphical -pred \"".expand("%")."\" &"
   "     graphical list checkouts
-  com! -nargs=0 -complete=command Ctlsco silent exec "! cleartool lscheckout -graphical ".expand("%:p:h")
+  com! -nargs=0 -complete=command Ctlsco echohl Error | echomsg "There is no graphical list checkouts on Unix" | echohl None
 
 else
   "     Diff buffer with the latest version on the main branch:
   com! -nargs=0 -complete=command Ctldif call <SID>CtConsoleDiff('', '\main\LATEST')
   "     xlsvtree on buffer
-  com! -nargs=0 -complete=command Ctxlsv exec "!start clearvtree.exe \"".expand("%")."\""
+  com! -nargs=0 -complete=command Ctxlsv silent exec "!start clearvtree.exe \"".expand("%")."\""
   "     xdiff with predecessor
-  com! -nargs=0 -complete=command Ctpdiff exec "!start cleartool diff -graphical -pred \"".expand("%")."\""
+  com! -nargs=0 -complete=command Ctpdiff silent exec "!start cleartool diff -graphical -pred \"".expand("%")."\""
   "     graphical list checkouts
   com! -nargs=0 -complete=command Ctlsco silent exec "! start cleartool lscheckout -graphical ".expand("%:p:h")
 endif
