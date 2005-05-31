@@ -11,10 +11,9 @@
 " - Added :ctlsco command and menu entry
 " - Renamed :ctdiff to :ctpdiff and clarified menu entry
 " - Removed all superfluous ':exec's from command definitions
+" - Added 'silent' for 'exec's which spawn external ClearCase applications. 
 " - All :cab do not replicate the :com command, but reference the command, so
 "   there's only one single definition. 
-" - Added 'silent' to all 'exe' commands to avoid key presses during command
-"   execution. 
 " - Fixed quotes on various defective commands (e.g. :Cthist)
 " - BF: No :ctlsco on Unix available. 
 " - BF: Ctcoc also captures list of files in result buffer, which will be
@@ -1315,11 +1314,11 @@ com! -nargs=0 -complete=command Ctqdif call <SID>CtConsoleDiff('', 0)
 cab ctqdif Ctqdif
 
 "     describe buffer
-com! -nargs=0 -complete=command Ctdesc silent exec "!cleartool describe \"".expand("%")."\""
+com! -nargs=0 -complete=command Ctdesc exec "!cleartool describe \"".expand("%")."\""
 cab ctdesc Ctdesc
 
 "     give version of buffer
-com! -nargs=0 -complete=command Ctver silent exec "!cleartool describe -aattr version \"".expand("%")."\""
+com! -nargs=0 -complete=command Ctver exec "!cleartool describe -aattr version \"".expand("%")."\""
 cab ctver Ctver
 
 "     List my checkouts in the current view and directory
@@ -1334,7 +1333,7 @@ cab ctcor Ctcor
 com! -nargs=0 -complete=command Ctcov call <SID>CtCmd("!cleartool lsco -short -cview ".<SID>CtMeStr()." -avob", "checkouts_allvobs")
 cab ctcov Ctcov
 
-com! -nargs=0 -complete=command Ctcmt silent exec "!cleartool describe -fmt \"Comment:\\n\'\\%c\'\" \"".expand("%")."\""
+com! -nargs=0 -complete=command Ctcmt exec "!cleartool describe -fmt \"Comment:\\n\'\\%c\'\" \"".expand("%")."\""
 cab ctcmt Ctcmt
 
 com! -nargs=0 -complete=command Ctann call <SID>CtAnnotate('')
@@ -1367,7 +1366,7 @@ else
   "     xdiff with predecessor
   com! -nargs=0 -complete=command Ctpdiff silent exec "!start cleartool diff -graphical -pred \"".expand("%")."\""
   "     graphical list checkouts
-  com! -nargs=0 -complete=command Ctlsco silent exec "! start cleartool lscheckout -graphical ".expand("%:p:h")
+  com! -nargs=0 -complete=command Ctlsco silent exec "!start cleartool lscheckout -graphical ".expand("%:p:h")
 endif
 
 cab  ctldif Ctldif
