@@ -7,6 +7,11 @@
 "
 " Modifications: {{{
 " $Log: ccase.vim,v $
+" Revision 1.41ingo 01-Jun-2005	Ingo Karkat
+" - Added global setting 'g:ccaseNoPromptOperations' to suppress the VIM
+"   hit-enter prompt on ctmk, ctci and ctco commands to speed up mass
+"   operations. 
+"
 " Revision 1.40ingo 13-Aug-2004 Ingo Karkat
 " - Added :ctlsco command and menu entry
 " - Renamed :ctdiff to :ctpdiff and clarified menu entry
@@ -333,6 +338,14 @@ endif
 " Use a global var here to keep comments across restarts
 if !exists("g:ccaseSaveComment")
   let g:ccaseSaveComment = ""
+endif
+
+" Suppress the hit-enter prompt on ctmk, ctci and ctco commands. 
+" Generally, the prompt makes sense to check the status of the cleartool
+" command. However, suppressing it makes sense for mass operations (e.g.
+" :argdo Ctco -nc). 
+if !exists("g:ccaseNoPromptOperations")
+  let g:ccaseNoPromptOperations = 0
 endif
 "}}}
 
@@ -686,7 +699,7 @@ function! s:CtMkelem(filename, ...)
   endif
 
   " Execute clearcase mkelem command:
-  exe l:ccase_command
+  exe s:GetCtSuppressPrefix() . l:ccase_command
 
   " Check error status of the command and log result to message history:
   if (v:shell_error)
@@ -794,7 +807,7 @@ function! s:CtCheckout(file, reserved, ...)
   " Execute clearcase checkout command:
   let l:ccase_command = "!cleartool co " . l:reserved_flag . " " .
                         \ l:comment_flag . " \"" . l:file . '"'
-  exe l:ccase_command
+  exe s:GetCtSuppressPrefix() . l:ccase_command
 
   " Check error status of the command and log result to message history:
   if (v:shell_error)
@@ -864,7 +877,7 @@ function! s:CtCheckin(file, ...)
   "DEBUG echo l:ccase_command
 
   " Execute clearcase checkin command:
-  exe l:ccase_command
+  exe s:GetCtSuppressPrefix() . l:ccase_command
 
   " Check error status of the command and log result to message history:
   if (v:shell_error)
@@ -904,7 +917,7 @@ function! s:CtUncheckout(file)
     let l:ccase_command = "!cleartool unco \"" . l:file . '"'
   endif
 
-  exe l:ccase_command
+  exe s:GetCtSuppressPrefix() . l:ccase_command
 
   " Check error status of the command and log result to message history:
   if (v:shell_error)
@@ -1132,6 +1145,19 @@ fu! s:EscapeComments(comment)
   let l:comment = escape(l:comment, '%#')
   return l:comment
 endfun " s:EscapeComments
+
+" ===========================================================================
+fu! s:GetCtSuppressPrefix()
+" ===========================================================================
+  " Neccessary to evaluate the global settings on each command invocation, 
+  " so that the setting can be changed dynamically (via :CtPromptOff and
+  " :CtPromptOn). 
+  if g:ccaseNoPromptOperations == 0
+    return ""
+  else
+    return "silent "
+  endif
+endfun " s:GetCtSuppressPrefix()
 
 " ===========================================================================
 function! s:OpenInNewWin(filename)
@@ -1378,6 +1404,8 @@ cab  ctlsco Ctlsco
 com! -nargs=0 -complete=command Ctpwv call <SID>CtShowViewName()
 cab  ctpwv Ctpwv
 
+com! -nargs=0 -complete=command CtPromptOff let g:ccaseNoPromptOperations = 1
+com! -nargs=0 -complete=command CtPromptOn let g:ccaseNoPromptOperations = 0
 " }}}
 " ===========================================================================
 "                              Beginning of Maps
