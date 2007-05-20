@@ -7,6 +7,10 @@
 "
 " Modifications: {{{
 " $Log: ccase.vim,v $
+" Revision 1.42ingo 13-Jun-2006 Ingo Karkat
+" - Added optional argument to Ctdesc to allow to pass '-g' option for the GUI
+"   version. 
+"
 " Revision 1.41ingo 01-Jun-2005	Ingo Karkat
 " - Added global setting 'g:ccaseNoPromptOperations' to suppress the VIM
 "   hit-enter prompt on ctmk, ctci and ctco commands to speed up mass
@@ -1340,7 +1344,7 @@ com! -nargs=0 -complete=command Ctqdif call <SID>CtConsoleDiff('', 0)
 cab ctqdif Ctqdif
 
 "     describe buffer
-com! -nargs=0 -complete=command Ctdesc exec "!cleartool describe \"".expand("%")."\""
+com! -nargs=? -complete=command Ctdesc exec "!cleartool describe <args> \"".expand("%")."\""
 cab ctdesc Ctdesc
 
 "     give version of buffer
