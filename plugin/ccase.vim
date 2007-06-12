@@ -7,6 +7,10 @@
 "
 " Modifications: {{{
 " $Log: ccase.vim,v $
+" Revision 1.43ingo 21-May-2007	Ingo Karkat
+" - BF: Added missing quoting of 'exec "!cleartool ..."' at :Ctxlsv (Unix) and
+"   :Ctlsco (Windows). 
+"
 " Revision 1.42ingo 13-Jun-2006 Ingo Karkat
 " - Added optional argument to Ctdesc to allow to pass '-g' option for the GUI
 "   version. 
@@ -1382,7 +1386,7 @@ if has("unix")
   "     Diff buffer with the latest version on the main branch:
   com! -nargs=0 -complete=command Ctldif call <SID>CtConsoleDiff('', '/main/LATEST')
   "     xlsvtree on buffer
-  com! -nargs=0 -complete=command Ctxlsv silent exec "!xlsvtree ".expand("%")." &"
+  com! -nargs=0 -complete=command Ctxlsv silent exec "!xlsvtree \"".expand("%")."\" &"
   "     xdiff with predecessor
   com! -nargs=0 -complete=command Ctpdiff silent exec "!cleartool diff -graphical -pred \"".expand("%")."\" &"
   "     graphical list checkouts
@@ -1396,7 +1400,7 @@ else
   "     xdiff with predecessor
   com! -nargs=0 -complete=command Ctpdiff silent exec "!start cleartool diff -graphical -pred \"".expand("%")."\""
   "     graphical list checkouts
-  com! -nargs=0 -complete=command Ctlsco silent exec "!start cleartool lscheckout -graphical ".expand("%:p:h")
+  com! -nargs=0 -complete=command Ctlsco silent exec "!start cleartool lscheckout -graphical \"".expand("%:p:h")."\""
 endif
 
 cab  ctldif Ctldif
