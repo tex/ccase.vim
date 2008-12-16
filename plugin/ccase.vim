@@ -7,6 +7,10 @@
 "
 " Modifications: {{{
 " $Log: ccase.vim,v $
+" Revision 1.44ingo 13-Jun-2007	Ingo Karkat
+" - Removed call to s:InstallDocumentation(), because it launches two 'mkdir'
+"   commands if the VIM documentation directory is read-only. 
+"
 " Revision 1.43ingo 21-May-2007	Ingo Karkat
 " - BF: Added missing quoting of 'exec "!cleartool ..."' at :Ctxlsv (Unix) and
 "   :Ctlsco (Windows). 
@@ -1651,13 +1655,15 @@ let s:revision =
 " Install the document:
 " NOTE: We must detect script name here. In a function, <sfile> will be
 "       expanded to the function name instead!
-silent! let s:install_status = 
-    \ s:InstallDocumentation(expand('<sfile>:p'), s:revision)
-
-if (s:install_status == 0)
-    echomsg expand("<sfile>:t:r") . ' v' . s:revision .
-               \ ': Help-documentation installed.'
-endif
+"****R20070613 /^--
+"silent! let s:install_status = 
+"    \ s:InstallDocumentation(expand('<sfile>:p'), s:revision)
+"
+"if (s:install_status == 0)
+"    echomsg expand("<sfile>:t:r") . ' v' . s:revision .
+"               \ ': Help-documentation installed.'
+"endif
+"****
 " }}}
 
 " ===========================================================================
