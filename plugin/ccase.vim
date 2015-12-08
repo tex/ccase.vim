@@ -7,6 +7,11 @@
 "
 " Modifications: {{{
 " $Log: ccase.vim,v $
+" Revision 1.45milan 26-Nov-2015 Milan Svoboda
+" - Added CtShowBranchName, CtShowModifiedFiles, CtDiff functions.
+" - Buffer set to hide instead of to delete
+" - Set isfname-=@-@ to be able to gf in buffer with list of files with version
+"
 " Revision 1.44ingo 13-Jun-2007	Ingo Karkat
 " - Removed call to s:InstallDocumentation(), because it launches two 'mkdir'
 "   commands if the VIM documentation directory is read-only. 
@@ -365,6 +370,58 @@ endif
 "                      Beginning of Function Definitions
 " ===========================================================================
 " {{{
+
+" ===========================================================================
+fun! s:CtGetBranchName()
+" Get the name of the current branch.
+" ===========================================================================
+  let l:ccase_cs = system("cleartool catcs")
+  let l:branch = substitute(l:ccase_cs,
+        \ ".*mkbranch \\(.\\{-}\\)\\n.*", "\\1", "")
+  return l:branch
+endfunction
+
+" ===========================================================================
+function! s:CtShowBranchName()
+" Show the name of the current branch.
+" ---------------------------------------------------------------------------
+  let l:branch = s:CtGetBranchName()
+
+  " Show the branch name:
+  echohl Question
+  echo "Branch name: ".l:branch
+  echohl None
+
+  return 0
+endfunction
+
+" ===========================================================================
+function! s:CtShowModifiedFiles()
+" Show files modified on the current branch
+" ---------------------------------------------------------------------------
+  let l:branch = s:CtGetBranchName()
+  call s:CtCmd("!cleartool find . -all -branch \"brtype(".l:branch.")\" -print", "modified_on_branch_list")
+endfunction
+
+function! s:CtDiff()
+  let l:lines = getline(1, line("$"))
+  for l:line in l:lines
+    if !empty(l:line)
+      let l:tmp = split(l:line, "@@")
+      let l:file2 = l:tmp[0]
+      if (filereadable(l:file2))
+        let l:file1 = l:line . "\\0"
+        let l:tmpFile = tempname()
+        let l:command = 'cleartool get -to ' . l:tmpFile . ' ' . l:file1
+        let l:result = system(command)
+        echoerr l:result
+        exe "tabnew"
+        exe "e! " . l:tmpFile
+        exe "vert diffsplit " . l:file2
+      endif
+    endif
+  endfor
+endfunction
 
 " ===========================================================================
 function! s:CtShowViewName()
@@ -1118,9 +1175,10 @@ fun! s:CtCmd(cmd_string, ...)
     " for VTreeExplorer
     setlocal noswapfile
     setlocal buftype=nofile
-    setlocal bufhidden=delete " d
+    setlocal bufhidden=hide
     let      b:ccaseUsed=1    " Keep from loading data twice the first time
     setlocal nomodifiable
+    setlocal isfname-=@-@
 
     " Get rid of temp file
     if has('unix')
@@ -1416,6 +1474,19 @@ cab  ctlsco Ctlsco
 com! -nargs=0 -complete=command Ctpwv call <SID>CtShowViewName()
 cab  ctpwv Ctpwv
 
+"     Give the current branch name
+com! -nargs=0 -complete=command Ctpbn call <SID>CtShowBranchName()
+cab  ctpbn Ctpbn
+
+"     Show modified files on current branch
+com! -nargs=0 -complete=command Ctmf call <SID>CtShowModifiedFiles()
+cab  ctmf Ctmf
+
+"     Create a tab with a diff (\0 vs disk version) for each line in the buffer
+"     The buffer shall be created by Ctmf command before
+com! -nargs=0 -complete=command Ctdiff call <SID>CtDiff()
+cab  ctdiff Ctdiff
+
 com! -nargs=0 -complete=command CtPromptOff let g:ccaseNoPromptOperations = 1
 com! -nargs=0 -complete=command CtPromptOn let g:ccaseNoPromptOperations = 0
 " }}}
@@ -1636,7 +1707,11 @@ if (has("gui_running") && &guioptions !~# "M") ||
   amenu 60.560 &Clearcase.List\ Checkouts\ in\ VOB<Tab>:ctcov
         \ :ctcov<cr>
   amenu 60.570 &Clearcase.External\ List\ Checkouts<Tab>:ctlsco
-	\ :ctlsco<cr>
+	    \ :ctlsco<cr>
+  amenu 60.580 &Clearcase.Modified\ Files\ on\ branch<Tab>:ctmf
+        \ :ctmf<cr>
+  amenu 60.590 &Clearcase.Diff\ of\ files\ in\ 'Modified\ Files\ on\ branch'\ buffer<Tab>:ctdiff
+        \ :ctdiff<cr>
 
   amenu 60.600 &Clearcase.-SEP5-        :
 
